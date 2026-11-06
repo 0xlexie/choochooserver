@@ -25,6 +25,9 @@ jobs:
       - name: Install Ansible
         run: python -m pip install "ansible-core~=2.19.0"
 
+      - name: Install Ansible collections
+        run: ansible-galaxy collection install -r collections/requirements.yml
+
       - name: Prepare temporary Vault variables
         run: cp env/local.apps.vault.yml.example env/local.apps.vault.yml
 

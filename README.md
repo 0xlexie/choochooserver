@@ -11,7 +11,7 @@ Ansible deploys services to two hosts:
 
 ## Requirements
 
-- Ansible with Vault support on the control machine
+- Ansible with Vault support and the `ansible.posix` collection on the control machine
 - Docker on the control machine to generate Glance’s authentication values
 - SSH access and sudo privileges on both hosts
 - `dnf`-based hosts with Docker Compose available
@@ -39,7 +39,13 @@ Follow these steps on your Ansible control machine.
    cp env/local.apps.vault.yml.example env/local.apps.vault.yml
    ```
 
-2. **Generate and enter the secrets.** Generate random secrets with `openssl rand -hex 32`, then replace the matching `replace-with-...` values in the new file.
+2. **Install the required Ansible collection:**
+
+   ```sh
+   ansible-galaxy collection install -r collections/requirements.yml
+   ```
+
+3. **Generate and enter the secrets.** Generate random secrets with `openssl rand -hex 32`, then replace the matching `replace-with-...` values in the new file.
 
    For Glance, run:
 
@@ -52,15 +58,15 @@ Follow these steps on your Ansible control machine.
 
    Set `SYNC_USER1` to `username:password` for Anki. Leave `OPENEXCHANGERATES_APP_ID` empty if you do not use that Securo integration.
 
-3. **Keep the default access private.** Until WireGuard is configured, leave `nginx_listen_addresses` as `127.0.0.1` and `nginx_allowed_cidrs` as `127.0.0.1/32`.
+4. **Keep the default access private.** Until WireGuard is configured, leave `nginx_listen_addresses` as `127.0.0.1` and `nginx_allowed_cidrs` as `127.0.0.1/32`.
 
-4. **Encrypt the settings file.** Choose a Vault password and keep it outside this repository:
+5. **Encrypt the settings file.** Choose a Vault password and keep it outside this repository:
 
    ```sh
    ansible-vault encrypt env/local.apps.vault.yml
    ```
 
-5. **Deploy the services:**
+6. **Deploy the services:**
 
    ```sh
    ansible-playbook --ask-vault-pass -i hosts.yml playbooks/main.yml
@@ -72,13 +78,21 @@ The private Vault file and `.env` files are ignored by Git. Never commit secrets
 
 ## Service notes
 
+<details>
+<summary>Show service notes</summary>
+
 - **Glance** — Compose file: `images/glance/compose.yml`. Uses a pinned release tag; update it deliberately.
 - **Securo** — Compose file: `images/securo/compose.yml`. Uses a pinned release tag; update it deliberately.
 - **Anki sync server** — Compose file and Dockerfile: `images/anki/`. Set `ANKI_VERSION` in Vault; changing it rebuilds the image.
 - **Postiz** — Compose files: `images/postiz/compose.yml` and `images/postiz/temporal.yml`. Uses a pinned release tag; update it deliberately.
 - **Persistent data** — App data is stored in Docker volumes. Replacing or stopping a stack does not delete its volumes.
 
+</details>
+
 ## Private access
+
+<details>
+<summary>Show private access instructions</summary>
 
 Apps are **not exposed to the internet**. Their ports bind to loopback, and Nginx initially listens only on `127.0.0.1`.
 
@@ -99,3 +113,5 @@ After setting up WireGuard:
 | `torrents.choochoo.train` | qBittorrent |
 
 Set Anki clients’ sync server URL to `http://anki.choochoo.train`. Some Postiz social integrations may require public OAuth callback domains; this deployment intentionally does not add public ingress.
+
+</details>
