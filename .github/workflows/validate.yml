@@ -1,0 +1,49 @@
+name: Validate
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Ansible
+        run: python -m pip install "ansible-core~=2.19.0"
+
+      - name: Prepare temporary Vault variables
+        run: cp env/local.apps.vault.yml.example env/local.apps.vault.yml
+
+      - name: Check Ansible syntax
+        run: ansible-playbook --syntax-check -i hosts.yml playbooks/main.yml
+
+      - name: Validate Docker Compose files
+        env:
+          DB_PASSWORD: ci-placeholder-db-password
+          SECRET_KEY: ci-placeholder-secret-key
+          ANKI_VERSION: "26.09.4"
+          SYNC_USER1: ci-user:ci-placeholder-password
+          POSTIZ_URL: http://postiz.choochoo.train
+          JWT_SECRET: ci-placeholder-jwt-secret
+          POSTIZ_DB_PASSWORD: ci-placeholder-postiz-db-password
+          TEMPORAL_DB_PASSWORD: ci-placeholder-temporal-db-password
+        run: |
+          docker compose -f images/glance/compose.yml config --quiet
+          docker compose -f images/securo/compose.yml config --quiet
+          docker compose -f images/anki/compose.yml config --quiet
+          docker compose -f images/postiz/compose.yml -f images/postiz/temporal.yml config --quiet
+          docker compose -f images/local.torrents.compose.yml config --quiet

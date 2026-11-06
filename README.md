@@ -1,5 +1,7 @@
 # Local services
 
+[![Validate](https://github.com/0xlexie/choochooserver/actions/workflows/validate.yml/badge.svg)](https://github.com/0xlexie/choochooserver/actions/workflows/validate.yml)
+
 Ansible deploys services to two hosts:
 
 | Host | Services |
