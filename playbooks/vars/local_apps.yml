@@ -1,0 +1,32 @@
+local_apps_compose_stacks:
+  - name: glance
+    compose_args: ["-f", "compose.yml"]
+  - name: securo
+    compose_args: ["-f", "compose.yml"]
+  - name: anki
+    compose_args: ["-f", "compose.yml"]
+    build: true
+  - name: postiz
+    compose_args: ["-f", "compose.yml", "-f", "temporal.yml"]
+
+nginx_proxy_sites:
+  - server_name: glance.choochoo.train
+    upstream: 127.0.0.1:8081
+    listen_addresses: "{{ local_apps_vault.nginx_listen_addresses }}"
+    allowed_cidrs: "{{ local_apps_vault.nginx_allowed_cidrs }}"
+  - server_name: securo.choochoo.train
+    upstream: 127.0.0.1:3000
+    listen_addresses: "{{ local_apps_vault.nginx_listen_addresses }}"
+    allowed_cidrs: "{{ local_apps_vault.nginx_allowed_cidrs }}"
+  - server_name: anki.choochoo.train
+    upstream: 127.0.0.1:8082
+    listen_addresses: "{{ local_apps_vault.nginx_listen_addresses }}"
+    allowed_cidrs: "{{ local_apps_vault.nginx_allowed_cidrs }}"
+    client_max_body_size: 500m
+    proxy_buffering: "off"
+    proxy_request_buffering: "off"
+    proxy_read_timeout: 3600s
+  - server_name: postiz.choochoo.train
+    upstream: 127.0.0.1:4007
+    listen_addresses: "{{ local_apps_vault.nginx_listen_addresses }}"
+    allowed_cidrs: "{{ local_apps_vault.nginx_allowed_cidrs }}"

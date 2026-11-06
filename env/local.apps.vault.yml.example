@@ -1,0 +1,21 @@
+local_apps_vault:
+  nginx_listen_addresses:
+    - "127.0.0.1"
+  nginx_allowed_cidrs:
+    - "127.0.0.1/32"
+  apps:
+    glance:
+      GLANCE_AUTH_SECRET_KEY: "replace-with-output-from-glance-secret-make"
+      GLANCE_AUTH_PASSWORD_HASH: "replace-with-output-from-glance-password-hash"
+    securo:
+      SECRET_KEY: "replace-with-a-generated-secret"
+      DB_PASSWORD: "replace-with-a-generated-secret"
+      OPENEXCHANGERATES_APP_ID: ""
+    anki:
+      ANKI_VERSION: "26.09.4"
+      SYNC_USER1: "replace-with-username:generated-password"
+    postiz:
+      POSTIZ_URL: "http://postiz.choochoo.train"
+      JWT_SECRET: "replace-with-a-generated-secret"
+      POSTIZ_DB_PASSWORD: "replace-with-a-generated-secret"
+      TEMPORAL_DB_PASSWORD: "replace-with-a-generated-secret"

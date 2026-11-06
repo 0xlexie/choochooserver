@@ -1,0 +1,24 @@
+auth:
+  secret-key: {{ app_environment.GLANCE_AUTH_SECRET_KEY | quote }}
+  users:
+    admin:
+      password-hash: {{ app_environment.GLANCE_AUTH_PASSWORD_HASH | quote }}
+
+pages:
+  - name: Home
+    columns:
+      - size: full
+        widgets:
+          - type: clock
+          - type: calendar
+            first-day-of-week: monday
+          - type: bookmarks
+            groups:
+              - title: Local apps
+                links:
+                  - title: Securo
+                    url: http://securo.choochoo.train
+                  - title: Anki
+                    url: http://anki.choochoo.train
+                  - title: Postiz
+                    url: http://postiz.choochoo.train

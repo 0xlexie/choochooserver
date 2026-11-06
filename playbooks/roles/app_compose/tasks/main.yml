@@ -1,0 +1,54 @@
+- name: Create app directories
+  ansible.builtin.file:
+    path: "/opt/localapps/{{ app.name }}"
+    state: directory
+    mode: "0755"
+  loop: "{{ local_apps_compose_stacks }}"
+  loop_control:
+    loop_var: app
+
+- name: Copy app deployment files
+  ansible.builtin.copy:
+    src: "{{ playbook_dir }}/../images/{{ app.name }}/"
+    dest: "/opt/localapps/{{ app.name }}/"
+    directory_mode: "0755"
+  loop: "{{ local_apps_compose_stacks }}"
+  loop_control:
+    loop_var: app
+
+- name: Render app environment files
+  ansible.builtin.template:
+    src: "{{ playbook_dir }}/../env/app.env.j2"
+    dest: "/opt/localapps/{{ app.name }}/.env"
+    mode: "0600"
+  vars:
+    app_environment: "{{ local_apps_vault.apps[app.name] }}"
+  loop: "{{ local_apps_compose_stacks }}"
+  loop_control:
+    loop_var: app
+  no_log: true
+
+- name: Render Glance authentication configuration
+  ansible.builtin.template:
+    src: glance.yml.j2
+    dest: /opt/localapps/glance/glance.yml
+    mode: "0600"
+  vars:
+    app_environment: "{{ local_apps_vault.apps.glance }}"
+  no_log: true
+
+- name: Start app Compose stacks
+  ansible.builtin.command:
+    argv: >-
+      {{
+        ['docker', 'compose'] + app.compose_args + ['up', '-d'] +
+        (['--build'] if app.build | default(false) else [])
+      }}
+    chdir: "/opt/localapps/{{ app.name }}"
+  loop: "{{ local_apps_compose_stacks }}"
+  loop_control:
+    loop_var: app
+  register: app_compose
+  changed_when: >-
+    app_compose.stdout is search('Created|Started|Recreated|Removed') or
+    app_compose.stderr is search('Created|Started|Recreated|Removed')

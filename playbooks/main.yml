@@ -1,0 +1,5 @@
+- name: Deploy local apps
+  import_playbook: local_apps.yml
+
+- name: Deploy torrent service
+  import_playbook: torrents.yml

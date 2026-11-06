@@ -1,0 +1,28 @@
+- name: Run local apps
+  hosts: app_servers
+  gather_facts: false
+  become: true
+  vars_files:
+    - "{{ playbook_dir }}/../env/local.apps.vault.yml"
+    - "{{ playbook_dir }}/vars/local_apps.yml"
+  pre_tasks:
+    - name: Validate local app deployment settings
+      ansible.builtin.import_tasks: tasks/validate_local_apps.yml
+  roles:
+    - docker_setup
+    - role: nginx_proxy
+  tasks:
+    - name: Remove legacy Kaneo deployment files
+      ansible.builtin.import_tasks: tasks/remove_legacy_kaneo.yml
+
+    - name: Configure Elasticsearch virtual memory for Postiz
+      ansible.builtin.sysctl:
+        name: vm.max_map_count
+        value: "262144"
+        state: present
+        sysctl_file: /etc/sysctl.d/99-localapps-postiz.conf
+        reload: true
+
+    - name: Deploy configured local app stacks
+      ansible.builtin.include_role:
+        name: app_compose

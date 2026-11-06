@@ -1,0 +1,10 @@
+name: localapps-glance
+
+services:
+  glance:
+    image: glanceapp/glance:v0.8.7
+    ports:
+      - "127.0.0.1:8081:8080"
+    volumes:
+      - ./glance.yml:/app/config/glance.yml:ro
+    restart: unless-stopped

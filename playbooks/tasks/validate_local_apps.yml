@@ -1,0 +1,25 @@
+- name: Validate local app Vault settings
+  ansible.builtin.assert:
+    that:
+      - local_apps_vault is mapping
+      - local_apps_vault.apps is mapping
+      - local_apps_vault.nginx_listen_addresses | length > 0
+      - local_apps_vault.nginx_allowed_cidrs | length > 0
+      - local_apps_vault.apps.glance.GLANCE_AUTH_SECRET_KEY | default('') | length > 0
+      - local_apps_vault.apps.glance.GLANCE_AUTH_PASSWORD_HASH | default('') | length > 0
+      - local_apps_vault.apps.securo.SECRET_KEY | default('') | length > 0
+      - local_apps_vault.apps.securo.DB_PASSWORD | default('') | length > 0
+      - local_apps_vault.apps.anki.ANKI_VERSION | default('') | length > 0
+      - (local_apps_vault.apps.anki.SYNC_USER1 | default('')) is search('^[^:]+:.+$')
+      - local_apps_vault.apps.postiz.JWT_SECRET | default('') | length > 0
+      - local_apps_vault.apps.postiz.POSTIZ_DB_PASSWORD | default('') | length > 0
+      - local_apps_vault.apps.postiz.TEMPORAL_DB_PASSWORD | default('') | length > 0
+      - "'0.0.0.0' not in local_apps_vault.nginx_listen_addresses"
+      - "'[::]' not in local_apps_vault.nginx_listen_addresses"
+      - "'replace-with-' not in (local_apps_vault | to_json)"
+      - >-
+        local_apps_vault.nginx_allowed_cidrs
+        | reject('match', '^([0-9]{1,3}\.){3}[0-9]{1,3}/32$|^[0-9A-Fa-f:]+/128$')
+        | list | length == 0
+  fail_msg: Populate the required app secrets and your WireGuard client address in the encrypted Vault variables file.
+  no_log: true

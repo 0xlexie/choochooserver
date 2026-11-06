@@ -1,0 +1,26 @@
+name: localapps-anki
+
+services:
+  anki:
+    image: localapps-anki-sync:${ANKI_VERSION:?Set ANKI_VERSION in .env}
+    build:
+      context: .
+      args:
+        ANKI_VERSION: ${ANKI_VERSION:?Set ANKI_VERSION in .env}
+    environment:
+      SYNC_USER1: ${SYNC_USER1:?Set SYNC_USER1 in .env}
+      SYNC_BASE: /anki_data
+    ports:
+      - "127.0.0.1:8082:8080"
+    volumes:
+      - anki_data:/anki_data
+    healthcheck:
+      test: ["CMD", "anki-sync-server", "--healthcheck"]
+      interval: 30s
+      timeout: 10s
+      start_period: 10s
+      retries: 3
+    restart: unless-stopped
+
+volumes:
+  anki_data:

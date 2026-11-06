@@ -1,0 +1,21 @@
+- name: Check for the previous Kaneo Compose file
+  ansible.builtin.stat:
+    path: /opt/localapps/compose.yml
+  register: legacy_kaneo_compose
+
+- name: Stop the previous Kaneo stack while preserving its data volume
+  ansible.builtin.command:
+    cmd: docker compose -f /opt/localapps/compose.yml down
+  when: legacy_kaneo_compose.stat.exists
+  changed_when: true
+
+- name: Remove the previous Kaneo Compose file
+  ansible.builtin.file:
+    path: /opt/localapps/compose.yml
+    state: absent
+  when: legacy_kaneo_compose.stat.exists
+
+- name: Remove the previous plaintext Kaneo environment file
+  ansible.builtin.file:
+    path: /opt/localapps/.env
+    state: absent

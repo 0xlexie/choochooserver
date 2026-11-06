@@ -1,0 +1,37 @@
+{% for site in nginx_proxy_sites %}
+server {
+{% for address in site.listen_addresses | default(['0.0.0.0']) %}
+    listen {{ address }}:80;
+{% endfor %}
+    server_name {{ site.server_name }};
+
+    location / {
+{% if site.allowed_cidrs is defined %}
+{% for cidr in site.allowed_cidrs %}
+        allow {{ cidr }};
+{% endfor %}
+        deny all;
+{% endif %}
+{% if site.client_max_body_size is defined %}
+        client_max_body_size {{ site.client_max_body_size }};
+{% endif %}
+        proxy_pass http://{{ site.upstream }};
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+{% if site.proxy_buffering is defined %}
+        proxy_buffering {{ site.proxy_buffering }};
+{% endif %}
+{% if site.proxy_request_buffering is defined %}
+        proxy_request_buffering {{ site.proxy_request_buffering }};
+{% endif %}
+{% if site.proxy_read_timeout is defined %}
+        proxy_read_timeout {{ site.proxy_read_timeout }};
+{% endif %}
+    }
+}
+{% endfor %}

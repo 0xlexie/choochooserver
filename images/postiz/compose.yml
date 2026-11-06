@@ -1,0 +1,85 @@
+name: localapps-postiz
+
+services:
+  postiz:
+    image: ghcr.io/gitroomhq/postiz-app:v2.25.3
+    environment:
+      MAIN_URL: ${POSTIZ_URL:?Set POSTIZ_URL in .env}
+      FRONTEND_URL: ${POSTIZ_URL:?Set POSTIZ_URL in .env}
+      NEXT_PUBLIC_BACKEND_URL: ${POSTIZ_URL:?Set POSTIZ_URL in .env}/api
+      JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET in .env}
+      DATABASE_URL: postgresql://postiz-user:${POSTIZ_DB_PASSWORD:?Set POSTIZ_DB_PASSWORD in .env}@postiz-postgres:5432/postiz-db-local
+      REDIS_URL: redis://postiz-redis:6379
+      BACKEND_INTERNAL_URL: http://localhost:3000
+      TEMPORAL_ADDRESS: temporal:7233
+      IS_GENERAL: "true"
+      DISABLE_REGISTRATION: "true"
+      RUN_CRON: "true"
+      STORAGE_PROVIDER: local
+      UPLOAD_DIRECTORY: /uploads
+      NEXT_PUBLIC_UPLOAD_DIRECTORY: /uploads
+    volumes:
+      - postiz-config:/config
+      - postiz-uploads:/uploads
+    ports:
+      - "127.0.0.1:4007:5000"
+    networks:
+      - postiz-network
+      - temporal-network
+    healthcheck:
+      test: ["CMD", "node", "-e", "const r=require('http').get('http://localhost:5000/',res=>process.exit(res.statusCode<500?0:1));r.on('error',()=>process.exit(1));r.setTimeout(4000,()=>{r.destroy();process.exit(1)})"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 120s
+    depends_on:
+      postiz-postgres:
+        condition: service_healthy
+      postiz-redis:
+        condition: service_healthy
+      temporal:
+        condition: service_healthy
+    restart: unless-stopped
+
+  postiz-postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_PASSWORD: ${POSTIZ_DB_PASSWORD:?Set POSTIZ_DB_PASSWORD in .env}
+      POSTGRES_USER: postiz-user
+      POSTGRES_DB: postiz-db-local
+    volumes:
+      - postgres-volume:/var/lib/postgresql/data
+    networks:
+      - postiz-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postiz-user -d postiz-db-local"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
+
+  postiz-redis:
+    image: redis:7.2
+    volumes:
+      - postiz-redis-data:/data
+    networks:
+      - postiz-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+volumes:
+  postgres-volume:
+  postiz-redis-data:
+  postiz-config:
+  postiz-uploads:
+
+networks:
+  postiz-network:
+    name: localapps-postiz-network
+  temporal-network:
+    name: localapps-temporal-network
