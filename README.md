@@ -6,8 +6,8 @@ Ansible deploys services to two hosts:
 
 | Host | Services |
 |---|---|
-| `local_apps` | Glance, Securo, Anki sync server, Postiz, Nginx |
-| `torrents` | qBittorrent, Nginx |
+| `local_apps` | [Glance](https://github.com/glanceapp/glance), [Securo](https://github.com/securo-finance/securo), [Anki sync server](https://github.com/ankitects/anki), [Postiz](https://github.com/gitroomhq/postiz-app), Nginx |
+| `torrents` | [qBittorrent](https://github.com/qbittorrent/qBittorrent), Nginx |
 
 ## Requirements
 
@@ -77,7 +77,6 @@ The private Vault file and `.env` files are ignored by Git. Never commit secrets
 - **Anki sync server** — Compose file and Dockerfile: `images/anki/`. Set `ANKI_VERSION` in Vault; changing it rebuilds the image.
 - **Postiz** — Compose files: `images/postiz/compose.yml` and `images/postiz/temporal.yml`. Uses a pinned release tag; update it deliberately.
 - **Persistent data** — App data is stored in Docker volumes. Replacing or stopping a stack does not delete its volumes.
-- **Kaneo migration** — The first deployment stops the old Kaneo stack and removes its remote plaintext `.env`, but preserves its database volume for backup or manual cleanup.
 
 ## Private access
 
@@ -100,4 +99,3 @@ After setting up WireGuard:
 | `torrents.choochoo.train` | qBittorrent |
 
 Set Anki clients’ sync server URL to `http://anki.choochoo.train`. Some Postiz social integrations may require public OAuth callback domains; this deployment intentionally does not add public ingress.
-
