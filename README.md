@@ -1,4 +1,4 @@
-# Local services
+# 🖥 Homelab
 
 [![Validate](https://github.com/0xlexie/choochooserver/actions/workflows/validate.yml/badge.svg)](https://github.com/0xlexie/choochooserver/actions/workflows/validate.yml)
 
@@ -59,6 +59,7 @@ Follow these steps on your Ansible control machine.
    Put the outputs in `GLANCE_AUTH_SECRET_KEY` and `GLANCE_AUTH_PASSWORD_HASH`. Replace `YOUR_PASSWORD` with the password you want to use.
 
    Set `SYNC_USER1` to `username:password` for Anki. Leave `OPENEXCHANGERATES_APP_ID` empty if you do not use that Securo integration.
+   Set `PROXMOXVE_URL` to the Proxmox hostname and port (without `https://`) and `PROXMOXVE_KEY` to a dedicated API token with read-only `PVEAuditor` permissions. Proxmox must use a TLS certificate trusted by the host. Set `TORRENTS_MONITOR_URL` to qBittorrent's private URL, reachable from the `local_apps` host.
 
 4. **Keep the default access private.** Until WireGuard is configured, leave `nginx_listen_addresses` as `127.0.0.1` and `nginx_allowed_cidrs` as `127.0.0.1/32`.
 
@@ -83,7 +84,9 @@ To edit the encrypted settings later, run `ansible-vault edit env/local.apps.vau
 <details>
 <summary>Show service notes</summary>
 
-- **Glance** — Compose file: `images/glance/compose.yml`. Uses a pinned release tag; update it deliberately.
+- **Glance** — Compose file: `images/glance/compose.yml`; dashboard configuration is rendered from a template. It uses host networking to monitor loopback-bound services but listens only on `127.0.0.1`. Proxmox access uses a read-only API token and requires a trusted TLS certificate.
+- **Dashboard widgets** — Kanagawa Dark theme, local service monitor, Proxmox VE/nodes, markets, Twitch channels, and Steam Specials (EUR prices).
+- **Community widgets** — Proxmox and Steam widget examples are based on [glanceapp/community-widgets](https://github.com/glanceapp/community-widgets).
 - **Securo** — Compose file: `images/securo/compose.yml`. Uses a pinned release tag; update it deliberately.
 - **Anki sync server** — Compose file and Dockerfile: `images/anki/`. Set `ANKI_VERSION` in Vault; changing it rebuilds the image.
 - **Postiz** — Compose files: `images/postiz/compose.yml` and `images/postiz/temporal.yml`. Uses a pinned release tag; update it deliberately.
@@ -91,7 +94,7 @@ To edit the encrypted settings later, run `ansible-vault edit env/local.apps.vau
 
 </details>
 
-## Private access
+## Private access (Wireguard)
 
 <details>
 <summary>Show private access instructions</summary>

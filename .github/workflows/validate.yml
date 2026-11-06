@@ -36,6 +36,9 @@ jobs:
 
       - name: Validate Docker Compose files
         env:
+          PROXMOXVE_URL: proxmox.example:8006
+          PROXMOXVE_KEY: ci-user@pam!glance=ci-token
+          TORRENTS_MONITOR_URL: http://torrents.example:8080
           DB_PASSWORD: ci-placeholder-db-password
           SECRET_KEY: ci-placeholder-secret-key
           ANKI_VERSION: "26.09.4"

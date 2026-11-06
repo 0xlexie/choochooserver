@@ -3,8 +3,11 @@ name: localapps-glance
 services:
   glance:
     image: glanceapp/glance:v0.8.7
-    ports:
-      - "127.0.0.1:8081:8080"
+    network_mode: host
+    environment:
+      PROXMOXVE_URL: ${PROXMOXVE_URL:?Set PROXMOXVE_URL in Vault}
+      PROXMOXVE_KEY: ${PROXMOXVE_KEY:?Set PROXMOXVE_KEY in Vault}
+      TORRENTS_MONITOR_URL: ${TORRENTS_MONITOR_URL:?Set TORRENTS_MONITOR_URL in Vault}
     volumes:
       - ./glance.yml:/app/config/glance.yml:ro
     restart: unless-stopped

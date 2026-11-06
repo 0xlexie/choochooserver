@@ -4,6 +4,17 @@ auth:
     admin:
       password-hash: {{ app_environment.GLANCE_AUTH_PASSWORD_HASH | quote }}
 
+server:
+  host: 127.0.0.1
+  port: 8081
+
+theme:
+  background-color: 240 13 14
+  primary-color: 51 33 68
+  negative-color: 358 100 68
+  contrast-multiplier: 1.2
+
+{% raw %}
 pages:
   - name: Home
     columns:
@@ -22,3 +33,110 @@ pages:
                     url: http://anki.choochoo.train
                   - title: Postiz
                     url: http://postiz.choochoo.train
+
+          - type: markets
+            title: Markets
+            markets:
+              - symbol: NVDA
+                name: NVIDIA
+              - symbol: GOOGL
+                name: Alphabet
+              - symbol: AMD
+                name: AMD
+              - symbol: SPY
+                name: S&P 500
+              - symbol: MSFT
+                name: Microsoft
+
+          - type: custom-api
+            title: Proxmox VE
+            title-url: https://${PROXMOXVE_URL}
+            cache: 1m
+            url: https://${PROXMOXVE_URL}/api2/json/cluster/resources
+            headers:
+              Accept: application/json
+              Authorization: PVEAPIToken=${PROXMOXVE_KEY}
+            template: |
+              <div class="flex justify-between text-center">
+                <div>
+                  <div class="color-highlight size-h3">{{ len (.JSON.Array "data.#(type==\"node\")#|#(status==\"online\")#") }}/{{ len (.JSON.Array "data.#(type==\"node\")#") }}</div>
+                  <div class="size-h5 uppercase">Nodes online</div>
+                </div>
+                <div>
+                  <div class="color-highlight size-h3">{{ len (.JSON.Array "data.#(type==\"qemu\")#|#(status==\"running\")#|#(template==0)#") }}/{{ len (.JSON.Array "data.#(type==\"qemu\")#|#(template==0)#") }}</div>
+                  <div class="size-h5 uppercase">VMs running</div>
+                </div>
+                <div>
+                  <div class="color-highlight size-h3">{{ len (.JSON.Array "data.#(type==\"lxc\")#|#(status==\"running\")#|#(template==0)#") }}/{{ len (.JSON.Array "data.#(type==\"lxc\")#|#(template==0)#") }}</div>
+                  <div class="size-h5 uppercase">Containers running</div>
+                </div>
+              </div>
+
+          - type: custom-api
+            title: Proxmox nodes
+            title-url: https://${PROXMOXVE_URL}
+            cache: 1m
+            url: https://${PROXMOXVE_URL}/api2/json/nodes
+            headers:
+              Accept: application/json
+              Authorization: PVEAPIToken=${PROXMOXVE_KEY}
+            template: |
+              <ul class="list list-gap-10">
+              {{ range .JSON.Array "data" }}
+                <li class="flex justify-between">
+                  <span class="color-highlight">{{ .String "node" }}</span>
+                  <span class="{{ if eq (.String "status") "online" }}color-positive{{ else }}color-negative{{ end }}">{{ .String "status" }}</span>
+                </li>
+              {{ end }}
+              </ul>
+
+          - type: twitch-channels
+            title: Twitch
+            channels:
+              - Jankos
+              - Doublelift
+              - MissMikkaa
+              - Mioree
+
+          - type: custom-api
+            title: Steam Specials
+            title-url: https://store.steampowered.com/specials?cc=nl
+            cache: 12h
+            url: https://store.steampowered.com/api/featuredcategories?cc=nl
+            template: |
+              <ul class="list list-gap-10 collapsible-container" data-collapse-after="5">
+              {{ range .JSON.Array "specials.items" }}
+                {{ $urlPrefix := "https://store.steampowered.com/sub/" }}
+                {{ if findMatch "/steam/apps/" (.String "header_image") }}
+                  {{ $urlPrefix = "https://store.steampowered.com/app/" }}
+                {{ end }}
+                <li>
+                  <a class="size-h4 color-highlight block text-truncate" href="{{ $urlPrefix }}{{ .Int "id" }}/">{{ .String "name" }}</a>
+                  <ul class="list-horizontal-text">
+                    <li>{{ .Int "final_price" | toFloat | mul 0.01 | printf "€%.2f" }}</li>
+                    <li>{{ .Int "discount_percent" }}% off</li>
+                  </ul>
+                </li>
+              {{ end }}
+              </ul>
+
+          - type: monitor
+            title: Local services
+            cache: 1m
+            sites:
+              - title: Glance
+                url: http://glance.choochoo.train
+                check-url: http://127.0.0.1:8081
+              - title: Securo
+                url: http://securo.choochoo.train
+                check-url: http://127.0.0.1:3000
+              - title: Anki sync
+                url: http://anki.choochoo.train
+                check-url: http://127.0.0.1:8082
+              - title: Postiz
+                url: http://postiz.choochoo.train
+                check-url: http://127.0.0.1:4007
+              - title: qBittorrent
+                url: ${TORRENTS_MONITOR_URL}
+                check-url: ${TORRENTS_MONITOR_URL}
+{% endraw %}

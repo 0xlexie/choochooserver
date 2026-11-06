@@ -7,6 +7,9 @@
       - local_apps_vault.nginx_allowed_cidrs | length > 0
       - local_apps_vault.apps.glance.GLANCE_AUTH_SECRET_KEY | default('') | length > 0
       - local_apps_vault.apps.glance.GLANCE_AUTH_PASSWORD_HASH | default('') | length > 0
+      - local_apps_vault.apps.glance.PROXMOXVE_URL | default('') | length > 0
+      - local_apps_vault.apps.glance.PROXMOXVE_KEY | default('') | length > 0
+      - local_apps_vault.apps.glance.TORRENTS_MONITOR_URL | default('') | length > 0
       - local_apps_vault.apps.securo.SECRET_KEY | default('') | length > 0
       - local_apps_vault.apps.securo.DB_PASSWORD | default('') | length > 0
       - local_apps_vault.apps.anki.ANKI_VERSION | default('') | length > 0
