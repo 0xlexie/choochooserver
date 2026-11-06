@@ -2,7 +2,9 @@
 
 [![Validate](https://github.com/0xlexie/choochooserver/actions/workflows/validate.yml/badge.svg)](https://github.com/0xlexie/choochooserver/actions/workflows/validate.yml)
 
-Ansible deploys services to two hosts:
+Very simple setup with utility software, mostly information management. Glance is used as the main dashboard. I use wireguard to connect from the ouside.
+
+*Ansible deploys services to two hosts:*
 
 | Host | Services |
 |---|---|
@@ -74,7 +76,7 @@ Follow these steps on your Ansible control machine.
 
    Enter the Vault password when prompted.
 
-The private Vault file and `.env` files are ignored by Git. Never commit secrets or the Vault password. To edit the encrypted settings later, run `ansible-vault edit env/local.apps.vault.yml`.
+To edit the encrypted settings later, run `ansible-vault edit env/local.apps.vault.yml`.
 
 ## Service notes
 
