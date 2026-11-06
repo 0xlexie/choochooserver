@@ -1,1 +1,2 @@
-/env/local.apps.env
+/env/*.env
+/env/*.vault.yml
